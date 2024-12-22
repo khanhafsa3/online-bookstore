@@ -2,14 +2,13 @@ package com.bnp.kata.onlinebookstore.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.bnp.kata.onlinebookstore.dto.ShoppingCartRequest;
 import com.bnp.kata.onlinebookstore.model.ShoppingCartItem;
 import com.bnp.kata.onlinebookstore.services.ShoppingCartService;
-
 @RestController
 @RequestMapping("/api/v1/cart")
 public class ShoppingCartController {
@@ -23,5 +22,10 @@ public class ShoppingCartController {
 				cartRequest.getQuantity());
 		return ResponseEntity.ok(addedItem);
 	}
-	 
+
+	@PutMapping("/update")
+	public ResponseEntity<ShoppingCartItem> updateBookQuantity(@RequestBody ShoppingCartRequest cartRequest) {
+		ShoppingCartItem updatedItem = shoppingCartService.updateBookQuantity(cartRequest);
+		return ResponseEntity.ok(updatedItem);
+	}
 }

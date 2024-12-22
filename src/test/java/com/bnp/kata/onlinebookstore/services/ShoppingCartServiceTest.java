@@ -5,24 +5,30 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
 import com.bnp.kata.onlinebookstore.dto.ShoppingCartRequest;
 import com.bnp.kata.onlinebookstore.model.Book;
 import com.bnp.kata.onlinebookstore.model.ShoppingCartItem;
 import com.bnp.kata.onlinebookstore.repository.BookRepository;
 import com.bnp.kata.onlinebookstore.repository.ShoppingCartRepository;
 import com.bnp.kata.onlinebookstore.services.helper.ShoppingCartItemCreator;
+import com.bnp.kata.onlinebookstore.services.validator.ShoppingCartItemValidator;
 
 public class ShoppingCartServiceTest {
-
+	 @Mock
+private ShoppingCartItemValidator cartItemValidator;
 	@Mock
 	private ShoppingCartRepository cartRepository;
 
@@ -68,5 +74,16 @@ public class ShoppingCartServiceTest {
 		verify(bookRepository, times(1)).findById(anyLong());
 		verify(cartRepository, times(1)).save(any());
 	}
-
+	@Test
+    void testUpdateBookQuantity() {
+        when(cartRepository.findById(anyLong())).thenReturn(Optional.of(cartItem));
+        doNothing().when(cartItemValidator).validateUserAuthorization(any(), anyLong());
+        when(cartRepository.save(any())).thenReturn(cartItem);
+        ShoppingCartItem updatedItem = shoppingCartService.updateBookQuantity(cartRequest);
+        assertNotNull(updatedItem);
+        assertEquals(3, updatedItem.getQuantity());
+        verify(cartRepository, times(1)).findById(anyLong());
+        verify(cartItemValidator, times(1)).validateUserAuthorization(any(), anyLong());
+        verify(cartRepository, times(1)).save(any());
+    }
 }
