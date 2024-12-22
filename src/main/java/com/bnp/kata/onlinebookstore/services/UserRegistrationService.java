@@ -1,11 +1,11 @@
 package com.bnp.kata.onlinebookstore.services;
 
 import java.util.Objects;
-
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import com.bnp.kata.onlinebookstore.dto.LoginRequest;
 import com.bnp.kata.onlinebookstore.dto.UserRegisterRequest;
 import com.bnp.kata.onlinebookstore.exception.UserAlreadyExistsException;
 import com.bnp.kata.onlinebookstore.model.User;
@@ -36,6 +36,12 @@ public class UserRegistrationService {
 
 	}
 
-	
+	public boolean isUserFound(LoginRequest loginRequest) {
+		Optional<User> foundUser = userRepository.findByUserName(loginRequest.getUserName());
+		if (foundUser.isPresent()) {
+			return passwordEncoder.matches(loginRequest.getPassword(), foundUser.get().getPassword());
+		}
+		return false;
+	}
 
 }

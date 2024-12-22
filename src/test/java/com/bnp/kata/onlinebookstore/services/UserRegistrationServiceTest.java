@@ -16,11 +16,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.bnp.kata.onlinebookstore.dto.LoginRequest;
 import com.bnp.kata.onlinebookstore.dto.UserRegisterRequest;
 import com.bnp.kata.onlinebookstore.exception.UserAlreadyExistsException;
 import com.bnp.kata.onlinebookstore.model.User;
 import com.bnp.kata.onlinebookstore.repository.UserRepository;
-
 public class UserRegistrationServiceTest {
 
 	@InjectMocks
@@ -67,5 +67,38 @@ public class UserRegistrationServiceTest {
 		verify(userRepository, never()).save(any(User.class));
 	}
 
-	
+	@Test
+	public void testIsUserFoundUserExistsAndPasswordMatches() {
+		LoginRequest request = new LoginRequest("testUser", "password123");
+		User user = new User();
+		user.setUserName("testUser");
+		user.setPassword("encodedPassword");
+
+		when(userRepository.findByUserName(request.getUserName())).thenReturn(Optional.of(user));
+		when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(true);
+
+		assertTrue(userRegistrationService.isUserFound(request));
+	}
+
+	@Test
+	public void testIsUserFoundUserDoesNotExist() {
+		LoginRequest request = new LoginRequest("Drake", "password123");
+
+		when(userRepository.findByUserName(request.getUserName())).thenReturn(Optional.empty());
+
+		assertFalse(userRegistrationService.isUserFound(request));
+	}
+
+	@Test
+	public void testIsUserFoundUserExists_ButPasswordDoesNotMatch() {
+		LoginRequest request = new LoginRequest("Ak", "wrongPassword");
+		User user = new User();
+		user.setUserName("Ak");
+		user.setPassword("correctEncodedPassword");
+
+		when(userRepository.findByUserName(request.getUserName())).thenReturn(Optional.of(user));
+		when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(false);
+
+		assertFalse(userRegistrationService.isUserFound(request));
+	}
 }

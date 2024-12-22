@@ -1,9 +1,8 @@
 package com.bnp.kata.onlinebookstore.controller;
-
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -11,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import com.bnp.kata.onlinebookstore.dto.LoginRequest;
 import com.bnp.kata.onlinebookstore.dto.UserRegisterRequest;
 import com.bnp.kata.onlinebookstore.model.User;
 import com.bnp.kata.onlinebookstore.services.UserRegistrationService;
@@ -44,6 +44,16 @@ public class UserControllerTest {
 				.andExpect(status().isCreated());
 	}
 
+	@Test
+	void shouldReturnUnauthorizedWhenInvalidCredentialsAreProvided() throws Exception {
+		LoginRequest loginRequest = new LoginRequest("user", "wrongPassword");
+
+		when(userRegistrationService.isUserFound(loginRequest)).thenReturn(false);
+
+		mockMvc.perform(post("/api/v1/user/login").contentType("application/json").content(convertToJson(loginRequest)))
+				.andExpect(status().isUnauthorized()).andExpect(jsonPath("$").value("Invalid credentials"));
+	}
+
 	private String convertToJson(Object request) {
 		if (request instanceof UserRegisterRequest) {
 			UserRegisterRequest registerRequest = (UserRegisterRequest) request;
@@ -51,8 +61,13 @@ public class UserControllerTest {
 					"{\"userName\":\"%s\", \"password\":\"%s\", \"email\":\"%s\", \"firstName\":\"%s\", \"lastName\":\"%s\"}",
 					registerRequest.getUserName(), registerRequest.getPassword(), registerRequest.getEmail(),
 					registerRequest.getFirstName(), registerRequest.getLastName());
-
+		} else if (request instanceof LoginRequest) {
+			LoginRequest loginRequest = (LoginRequest) request;
+			return String.format("{\"userName\":\"%s\", \"password\":\"%s\"}", loginRequest.getUserName(),
+					loginRequest.getPassword());
 		}
 		return "{}";
 	}
+
+	
 }
