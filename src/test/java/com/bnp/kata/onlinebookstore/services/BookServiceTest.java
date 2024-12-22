@@ -47,13 +47,21 @@ public class BookServiceTest {
 		newBook.setTitle("Book Three");
 		newBook.setPrice(39.99);
 		when(bookRepository.save(newBook)).thenReturn(book1);
-
 		Book createdBook = bookService.createBook(newBook);
-
 		assertNotNull(createdBook);
 		assertEquals("Book One", createdBook.getTitle());
 		verify(bookRepository, times(1)).save(newBook);
 	}
 
+	@Test
+	void testGetAllBooks() {
+		when(bookRepository.findAll()).thenReturn(Arrays.asList(book1, book2));
+		List<Book> books = bookService.getAllBooks();
+		assertNotNull(books);
+		assertEquals(2, books.size());
+		assertEquals("Book One", books.get(0).getTitle());
+		assertEquals("Book Two", books.get(1).getTitle());
+		verify(bookRepository, times(1)).findAll();
+	}
 
 }
