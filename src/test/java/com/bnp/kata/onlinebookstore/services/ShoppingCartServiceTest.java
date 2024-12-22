@@ -86,4 +86,12 @@ private ShoppingCartItemValidator cartItemValidator;
         verify(cartItemValidator, times(1)).validateUserAuthorization(any(), anyLong());
         verify(cartRepository, times(1)).save(any());
     }
+	
+	 @Test
+	    void testRemoveBookFromCart() {
+	        when(cartRepository.findByUserIdAndBookId(anyLong(), anyLong())).thenReturn(Optional.of(cartItem));
+	        shoppingCartService.removeBookFromCart(1L, 1L);
+	        verify(cartRepository, times(1)).delete(cartItem);
+	    }
+	 
 }

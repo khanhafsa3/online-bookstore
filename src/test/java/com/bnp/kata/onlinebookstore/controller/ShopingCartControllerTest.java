@@ -62,5 +62,15 @@ public class ShopingCartControllerTest {
 		return String.format("{\"bookId\": %d, \"userId\": %d, \"quantity\": %d}", cartRequest.getBookId(),
 				cartRequest.getUserId(), cartRequest.getQuantity());
 	}
+	
+	@Test
+	void shouldRemoveBookFromCartWhenValidRequestIsSent() throws Exception {
+		doNothing().when(shoppingCartService).removeBookFromCart(1L, 1L);
+
+		mockMvc.perform(delete("/api/v1/cart/remove").param("bookId", "1").param("userId", "1"))
+				.andExpect(status().isNoContent());
+
+		verify(shoppingCartService, times(1)).removeBookFromCart(1L, 1L);
+	}
 
 }

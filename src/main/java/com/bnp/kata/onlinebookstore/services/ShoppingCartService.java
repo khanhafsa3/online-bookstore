@@ -40,6 +40,12 @@ public class ShoppingCartService {
         cartItem.setQuantity(cartRequest.getQuantity());
         return cartRepository.save(cartItem);
     }
+    
+    public void removeBookFromCart(Long bookId, Long userId) {
+        ShoppingCartItem cartItem = findCartItemByUserAndBookId(userId, bookId);
+        cartRepository.delete(cartItem);
+    }
+
     private ShoppingCartItem findCartItemById(Long cartItemId) {
         return cartRepository.findById(cartItemId)
                 .orElseThrow(() -> new ItemNotFoundException("Item not found in cart"));
@@ -47,5 +53,9 @@ public class ShoppingCartService {
 	private Book findBookById(Long bookId) {
 		return bookRepository.findById(bookId).orElseThrow(() -> new ItemNotFoundException("Book not found"));
 	}
-
+	   private ShoppingCartItem findCartItemByUserAndBookId(Long userId, Long bookId) {
+	        return cartRepository.findByUserIdAndBookId(userId, bookId)
+	                .orElseThrow(() -> new ItemNotFoundException("Item not found in cart"));
+	    }
+	    
 }
