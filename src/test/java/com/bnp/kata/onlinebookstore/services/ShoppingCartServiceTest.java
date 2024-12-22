@@ -1,7 +1,8 @@
 package com.bnp.kata.onlinebookstore.services;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -9,16 +10,16 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 import com.bnp.kata.onlinebookstore.dto.ShoppingCartRequest;
+import com.bnp.kata.onlinebookstore.exception.ItemNotFoundException;
 import com.bnp.kata.onlinebookstore.model.Book;
 import com.bnp.kata.onlinebookstore.model.ShoppingCartItem;
 import com.bnp.kata.onlinebookstore.repository.BookRepository;
@@ -27,8 +28,8 @@ import com.bnp.kata.onlinebookstore.services.helper.ShoppingCartItemCreator;
 import com.bnp.kata.onlinebookstore.services.validator.ShoppingCartItemValidator;
 
 public class ShoppingCartServiceTest {
-	 @Mock
-private ShoppingCartItemValidator cartItemValidator;
+	@Mock
+	private ShoppingCartItemValidator cartItemValidator;
 	@Mock
 	private ShoppingCartRepository cartRepository;
 
@@ -74,24 +75,51 @@ private ShoppingCartItemValidator cartItemValidator;
 		verify(bookRepository, times(1)).findById(anyLong());
 		verify(cartRepository, times(1)).save(any());
 	}
+
 	@Test
-    void testUpdateBookQuantity() {
-        when(cartRepository.findById(anyLong())).thenReturn(Optional.of(cartItem));
-        doNothing().when(cartItemValidator).validateUserAuthorization(any(), anyLong());
-        when(cartRepository.save(any())).thenReturn(cartItem);
-        ShoppingCartItem updatedItem = shoppingCartService.updateBookQuantity(cartRequest);
-        assertNotNull(updatedItem);
-        assertEquals(3, updatedItem.getQuantity());
-        verify(cartRepository, times(1)).findById(anyLong());
-        verify(cartItemValidator, times(1)).validateUserAuthorization(any(), anyLong());
-        verify(cartRepository, times(1)).save(any());
-    }
-	
-	 @Test
-	    void testRemoveBookFromCart() {
-	        when(cartRepository.findByUserIdAndBookId(anyLong(), anyLong())).thenReturn(Optional.of(cartItem));
-	        shoppingCartService.removeBookFromCart(1L, 1L);
-	        verify(cartRepository, times(1)).delete(cartItem);
-	    }
-	 
+	void testUpdateBookQuantity() {
+		when(cartRepository.findById(anyLong())).thenReturn(Optional.of(cartItem));
+		doNothing().when(cartItemValidator).validateUserAuthorization(any(), anyLong());
+		when(cartRepository.save(any())).thenReturn(cartItem);
+		ShoppingCartItem updatedItem = shoppingCartService.updateBookQuantity(cartRequest);
+		assertNotNull(updatedItem);
+		assertEquals(3, updatedItem.getQuantity());
+		verify(cartRepository, times(1)).findById(anyLong());
+		verify(cartItemValidator, times(1)).validateUserAuthorization(any(), anyLong());
+		verify(cartRepository, times(1)).save(any());
+	}
+
+	@Test
+	void testRemoveBookFromCart() {
+		when(cartRepository.findByUserIdAndBookId(anyLong(), anyLong())).thenReturn(Optional.of(cartItem));
+		shoppingCartService.removeBookFromCart(1L, 1L);
+		verify(cartRepository, times(1)).delete(cartItem);
+	}
+
+	@Test
+	void testFindCartItemsByUserId() {
+		when(cartRepository.findByUserId(anyLong())).thenReturn(Arrays.asList(cartItem));
+		List<ShoppingCartItem> cartItemsByUserId = shoppingCartService.findCartItemsByUserId(1L);
+		assertNotNull(cartItemsByUserId);
+		assertFalse(cartItemsByUserId.isEmpty());
+		verify(cartRepository, times(1)).findByUserId(anyLong());
+	}
+
+	@Test
+	void testFindBookByIdThrowsExceptionWhenNotFound() {
+		when(bookRepository.findById(anyLong())).thenReturn(Optional.empty());
+		assertThrows(ItemNotFoundException.class, () -> shoppingCartService.addBookToCart(1L, 1L, 2));
+	}
+
+	@Test
+	void testFindCartItemByIdThrowsExceptionWhenNotFound() {
+		when(cartRepository.findById(anyLong())).thenReturn(Optional.empty());
+		assertThrows(ItemNotFoundException.class, () -> shoppingCartService.updateBookQuantity(cartRequest));
+	}
+
+	@Test
+	void testFindCartItemByUserAndBookIdThrowsExceptionWhenNotFound() {
+		when(cartRepository.findByUserIdAndBookId(anyLong(), anyLong())).thenReturn(Optional.empty());
+		assertThrows(ItemNotFoundException.class, () -> shoppingCartService.removeBookFromCart(1L, 1L));
+	}
 }
