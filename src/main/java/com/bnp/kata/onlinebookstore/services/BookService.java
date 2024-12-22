@@ -1,5 +1,7 @@
 package com.bnp.kata.onlinebookstore.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,4 +17,7 @@ public class BookService {
 		return bookRepository.save(book);
 	}
 
+	public List<Book> getAllBooks() {
+		return bookRepository.findAll();
+	}
 }
