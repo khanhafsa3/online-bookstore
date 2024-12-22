@@ -9,8 +9,8 @@ This project is a simple code kata that involves creating a basic online booksto
 
 ## Requirements
 
-- **Java** : 17
-- **Springboot** : 3.x
+- **Java** : 1.8 and above
+- **Springboot** : 2.x
 - **Maven** : For Dependency management
 - **JUnit** : 5.x
 
@@ -18,7 +18,7 @@ This project is a simple code kata that involves creating a basic online booksto
 
 - Clone this repository:
    ```bash
-   https://github.com/khanhafsa3/OnlineBookStore
+   https://github.com/khanhafsa3/online-bookstore
 - Build the project and run the tests by running
     ```bash
     mvn clean install
