@@ -23,8 +23,7 @@ This project is a simple code kata that involves creating a basic online booksto
     ```bash
     mvn clean install
 
-## Sample Input and Output
-
+## Sample Input 
 The sample input and output is provided in the test/resources folder
 
 ## Test reports
